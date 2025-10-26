@@ -269,6 +269,99 @@ public class MinSegmentTree {
 ```
 
 </JavaSection>
+
+<PySection>
+
+```python
+import sys
+import math
+from typing import TypeVar, Generic
+
+T = TypeVar("T")
+
+# A data structure that can answer point update & range min queries.
+# BeginCodeSnip{Min Segment Tree}
+class MinSegmentTree(Generic[T]):
+    def __init__(self, arr: List[T] = None, length: int = None):
+        self.DEFAULT = math.inf
+        if arr is not None:
+            self.len = len(arr)
+            self.segtree = [self.DEFAULT] * (self.len * 4)
+            self._build(arr, 1, 0, self.len - 1)
+        else:
+            assert length is not None
+            self.len = length
+            self.segtree = [self.DEFAULT] * (self.len * 4)
+
+    def _combine(self, a: T, b: T) -> T:
+        return a if a < b else b
+
+    def _build(self, arr: List[T], at: int, at_left: int, at_right: int):
+        if at_left == at_right:
+            self.segtree[at] = arr[at_left]
+            return
+        mid = (at_left + at_right) // 2
+        self._build(arr, 2 * at, at_left, mid)
+        self._build(arr, 2 * at + 1, mid + 1, at_right)
+        self.segtree[at] = self._combine(self.segtree[2 * at], self.segtree[2 * at + 1])
+
+    def _set(self, ind: int, val: T, at: int, at_left: int, at_right: int):
+        if at_left == at_right:
+            self.segtree[at] = val
+            return
+        mid = (at_left + at_right) // 2
+        if ind <= mid:
+            self._set(ind, val, 2 * at, at_left, mid)
+        else:
+            self._set(ind, val, 2 * at + 1, mid + 1, at_right)
+        self.segtree[at] = self._combine(self.segtree[2 * at], self.segtree[2 * at + 1])
+
+    def _range_min(self, start: int, end: int, at: int, at_left: int, at_right: int) -> T:
+        if at_right < start or end < at_left:
+            return self.DEFAULT
+        if start <= at_left and at_right <= end:
+            return self.segtree[at]
+        mid = (at_left + at_right) // 2
+        left_res = self._range_min(start, end, 2 * at, at_left, mid)
+        right_res = self._range_min(start, end, 2 * at + 1, mid + 1, at_right)
+        return self._combine(left_res, right_res)
+
+    # sets the value at ind to val.
+    def set(self, ind: int, val: T):
+        self._set(ind, val, 1, 0, self.len - 1)
+
+    # @return the minimum element in the range [start, end]
+    def range_min(self, start: int, end: int) -> T:
+        return self._range_min(start, end, 1, 0, self.len - 1)
+
+# EndCodeSnip
+def main():
+    data = sys.stdin.read().strip().split()
+    it = iter(data)
+    arr_len = int(next(it))
+    query_num = int(next(it))
+    arr = [0] * arr_len
+    for i in range(arr_len):
+        arr[i] = int(next(it))
+
+    segtree = MinSegmentTree(arr=arr)
+    out_lines = []
+    for _ in range(query_num):
+        type_ = int(next(it))
+        if type_ == 1:
+            ind = int(next(it))
+            val = int(next(it))
+            segtree.set(ind - 1, val)
+        elif type_ == 2:
+            start = int(next(it))
+            end = int(next(it))
+            out_lines.append(str(segtree.range_min(start - 1, end - 1)))
+
+    sys.stdout.write("\n".join(out_lines))
+```
+
+</PySection>
+
 </LanguageSection>
 
 ### Iterative Implementation
@@ -665,6 +758,93 @@ public class SumSegmentTree {
 ```
 
 </JavaSection>
+
+<PySection>
+
+```python
+import sys
+from typing import TypeVar, Generic, List
+
+T = TypeVar("T")
+# BeginCodeSnip{Sum Segment Tree Implementation}
+class SumSegmentTree(Generic[T]):
+    def __init__(self, arr: List[T] = None, length: int = None):
+        self.DEFAULT = 0
+        if arr is not None:
+            self.len = len(arr)
+            self.segtree = [self.DEFAULT] * (self.len * 4)
+            self._build(arr, 1, 0, self.len - 1)
+        else:
+            assert length is not None
+            self.len = length
+            self.segtree = [self.DEFAULT] * (self.len * 4)
+
+    def _combine(self, a: T, b: T) -> T:
+        return a + b
+
+    def _build(self, arr: List[T], at: int, at_left: int, at_right: int):
+        if at_left == at_right:
+            self.segtree[at] = arr[at_left]
+            return
+        mid = (at_left + at_right) // 2
+        self._build(arr, 2 * at, at_left, mid)
+        self._build(arr, 2 * at + 1, mid + 1, at_right)
+        self.segtree[at] = self._combine(self.segtree[2 * at], self.segtree[2 * at + 1])
+
+    def _set(self, ind: int, val: T, at: int, at_left: int, at_right: int):
+        if at_left == at_right:
+            self.segtree[at] = val
+            return
+        mid = (at_left + at_right) // 2
+        if ind <= mid:
+            self._set(ind, val, 2 * at, at_left, mid)
+        else:
+            self._set(ind, val, 2 * at + 1, mid + 1, at_right)
+        self.segtree[at] = self._combine(self.segtree[2 * at], self.segtree[2 * at + 1])
+
+    def _range_sum(self, start: int, end: int, at: int, at_left: int, at_right: int) -> T:
+        if at_right < start or end < at_left:
+            return self.DEFAULT
+        if start <= at_left and at_right <= end:
+            return self.segtree[at]
+        mid = (at_left + at_right) // 2
+        left_res = self._range_sum(start, end, 2 * at, at_left, mid)
+        right_res = self._range_sum(start, end, 2 * at + 1, mid + 1, at_right)
+        return self._combine(left_res, right_res)
+
+    # sets the value at ind to val.
+    def set(self, ind: int, val: T):
+        self._set(ind, val, 1, 0, self.len - 1)
+
+    # @return the sum of the elements in the range [start, end]
+    def range_sum(self, start: int, end: int) -> T:
+        return self._range_sum(start, end, 1, 0, self.len - 1)
+# EndCodeSnip
+
+def main():
+    data = sys.stdin.read().strip().split()
+    it = iter(data)
+    arr_len = int(next(it))
+    query_num = int(next(it))
+    arr = [int(next(it)) for _ in range(arr_len)]
+
+    segtree = SumSegmentTree(arr=arr)
+    out_lines = []
+    for _ in range(query_num):
+        type_ = int(next(it))
+        if type_ == 1:
+            ind = int(next(it))
+            val = int(next(it))
+            segtree.set(ind - 1, val)
+        elif type_ == 2:
+            start = int(next(it))
+            end = int(next(it))
+            out_lines.append(str(segtree.range_sum(start - 1, end - 1)))
+
+    sys.stdout.write("\n".join(out_lines))
+```
+
+</PySection>
 </LanguageSection>
 
 ### Iterative Implementation
