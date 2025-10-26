@@ -463,6 +463,46 @@ static void remove(int x) {
 ```
 
 </JavaSection>
+
+<PySection>
+
+While this isn't an exact copy of multiset in C++ its quite similar since it tracks the occurrences of each element,
+allows insertion of multiple copies of the same element, querying counts of elements, and allows you to remove one or all occurrences.
+It does not however maintain the elements in sorted order automatically, maintaining sorted access or performing RB operations require extra work.
+
+There is a PyPi project that allows for pure multiset in python however these arent accepted during competitions since Pip is not allowed.
+
+```python
+from collections import Counter
+
+ms = Counter()
+
+ms.update([1])                  # [1]
+ms.update([14])                 # [1, 14]
+ms.update([9])                  # [1, 9, 14]
+ms.update([2])                  # [1, 2, 9, 14]
+ms.update([9])                  # [1, 2, 9, 9, 14]
+ms.update([9])                  # [1, 2, 9, 9, 9, 14]
+
+print(ms[4])   # 0
+print(ms[9])   # 3
+print(ms[14])  # 1
+
+# erase(ms.find(9)) → remove a single occurrence
+if ms[9] > 0:
+    ms[9] -= 1
+    if ms[9] == 0:
+        del ms[9]
+print(ms[9])  # 2
+
+# erase(9) → remove all occurrences
+if 9 in ms:
+    del ms[9]
+print(ms[9])  # 0
+
+```
+
+</PySection>
 </LanguageSection>
 
 ## Introductory Problems
