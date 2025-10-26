@@ -589,6 +589,30 @@ class PCB {
 ```
 
 </JavaSection>
+<PySection>
+
+```python
+import bisect
+
+def longest_increasing_subsequence():
+	n = int(input())
+	a = [tuple(map(int, input().split())) for _ in range(n)]
+
+	a.sort(reverse=True)
+	s = []
+	lis = 0
+
+	# finding the LIS of a reversed array = finding the LIS
+	for _, second in a:
+		pos = bisect.bisect_right(s, second)
+		if pos == len(s):
+			lis += 1
+		else:
+			s.pop(pos)
+		bisect.insort(s, second)
+	return lis
+```
+</PySection>
 </LanguageSection>
 
 ## Problems
